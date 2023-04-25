@@ -1,12 +1,8 @@
 .voice-recorder_maincontainer {
-  aspect-ratio: 3/1;
-  border: 0px solid #d8d5d5;
-  border-radius: 10px;
-  box-shadow: 0px 4px 8px #cecbcb;
+  aspect-ratio: 20/1;
   display: grid;
   grid-template-rows: 2fr 1fr;
-  margin: 10px 30px;
-  width: 400px;
+  width: "100%";
 
   canvas {
     /* all four are needed to support the most browsers */

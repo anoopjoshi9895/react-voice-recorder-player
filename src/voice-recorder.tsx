@@ -24,6 +24,9 @@ export const VoiceRecorder = forwardRef((props: VoiceRecorderProps, ref) => {
     stop() {
       controllerRef?.current?.stop();
     },
+    download() {
+      controllerRef?.current?.download();
+    },
   }));
   return (
     <AudioProvider>
@@ -32,18 +35,19 @@ export const VoiceRecorder = forwardRef((props: VoiceRecorderProps, ref) => {
           className="voice-recorder_maincontainer"
           style={mainContainerStyleComplete}
         >
-          <Waveform />
-          <Controllers ref={controllerRef} />
+          <Waveform
+            onStop={(audioData) => {
+              props.onStop?.(audioData.blob);
+            }}
+          />
+          <Controllers
+            onTimerUpdated={(timer: Timer) => {
+              console.log(timer);
+              props.onTimerUpdated?.(timer);
+            }}
+            ref={controllerRef}
+          />
         </div>
-        <button
-          onClick={() => {
-            controllerRef?.current?.start();
-          }}
-        >
-          start
-        </button>
-        <button>pause</button>
-        <button>stop</button>
       </UserPropsProvider>
     </AudioProvider>
   );

@@ -1,18 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
-import { useAudio, useUserProps } from '../../context';
-import { setUpCanvas as setUpCanvasUtil, generateCanvasFillColor } from '../../utils';
-import '../../styles/waveform.scss';
+import { useEffect, useRef, useState } from "react";
+import { useAudio, useUserProps } from "../../context";
+import {
+  setUpCanvas as setUpCanvasUtil,
+  generateCanvasFillColor,
+} from "../../utils";
+import "../../styles/waveform.scss";
 
 /**
- * CREDITS: https://codepen.io/davidtorroija/pen/ZZzLpb?editors=0010 
+ * CREDITS: https://codepen.io/davidtorroija/pen/ZZzLpb?editors=0010
  * https://stackoverflow.com/questions/55407563/web-audio-api-and-javascript-get-the-correct-picks-from-microphone
  */
 
 const TIME_OFFSET = 100;
 const GRAPH_WIDTH = 2;
 
-function Record() {
-  const { audioStatus = '', updateAudioRecording } = useAudio();
+function Record(props: { onStop: (audio: AudioRecordingDataType) => void }) {
+  const { audioStatus = "", updateAudioRecording } = useAudio();
   const { graphColor, graphShaded } = useUserProps();
   const [now, setNow] = useState<number>(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -22,12 +25,14 @@ function Record() {
   useEffect(() => {
     status.current = audioStatus;
     if (audioStatus === RECORDING) {
-      /* recording resumed */ 
-      if (obj?.current?.audioContext?.state === 'suspended') {
+      /* recording resumed */
+      if (obj?.current?.audioContext?.state === "suspended") {
         obj.current.audioContext.resume().then(loop);
         obj.current?.mediaRecorder?.resume();
-      } else if (!obj?.current?.audioContext?.state) { /* recording initiated */
-        navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      } else if (!obj?.current?.audioContext?.state) {
+        /* recording initiated */
+        navigator.mediaDevices
+          .getUserMedia({ audio: true, video: false })
           .then(setUpAudioAPI);
       }
     }
@@ -48,7 +53,10 @@ function Record() {
   }, []);
 
   const setUpCanvas = () => {
-    const canvas = setUpCanvasUtil(['waveformgraph-record'], '.voice-recorder_recordcontainer')
+    const canvas = setUpCanvasUtil(
+      ["waveformgraph-record"],
+      ".voice-recorder_recordcontainer"
+    );
 
     if (canvas) canvasRef.current = canvas[0];
   };
@@ -56,7 +64,8 @@ function Record() {
   const setUpAudioAPI = (micStream: MediaStream) => {
     try {
       // added the any type because webkitAudioContext does not exist on window typeof globalThis
-      const AudioContext = window.AudioContext || (window as any)?.webkitAudioContext;
+      const AudioContext =
+        window.AudioContext || (window as any)?.webkitAudioContext;
       const audioContext = new AudioContext();
       obj.current.audioContext = audioContext;
       /* this gives you the 'audio node' whose media is obtained from the microphone */
@@ -67,12 +76,12 @@ function Record() {
       /* this returns an 'analyser node' which is used to obtain
       audio time and frequency data to create data visualizations */
       obj.current.analyserNode = audioContext.createAnalyser();
-    
+
       /* connect function will connect the output of the sourceNode to the input of the analyser */
       sourceNode.connect(obj?.current?.analyserNode);
       /* if you want to play the audio you have to 'connect' to audioContext.destination
       this will streamline the audio to your device's speakers  */
-    
+
       /* The higher the number of fftSize, the more data points we get and the more graphData we’ll display. */
       obj.current.analyserNode.fftSize = 128;
       /* frequencyBinCount = fftSize / 2 */
@@ -86,44 +95,55 @@ function Record() {
       const mediaRecorder = new MediaRecorder(micStream);
       obj.current.mediaRecorder = mediaRecorder;
       mediaRecorder.start();
-      mediaRecorder.addEventListener('dataavailable', async (event) => {
+      mediaRecorder.addEventListener("dataavailable", async (event) => {
         const arrayBuffer = await event.data.arrayBuffer();
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        const recordingData = { blob: event.data, duration: audioBuffer.duration, graphData: (obj.current.graphData ?? []) }
+        const recordingData = {
+          blob: event.data,
+          duration: audioBuffer.duration,
+          graphData: obj.current.graphData ?? [],
+        };
         updateAudioRecording(recordingData);
+        props.onStop(recordingData);
       });
-      mediaRecorder.addEventListener('stop', () => {
+      mediaRecorder.addEventListener("stop", () => {
         // remove that red dot on the browser tab
-        micStream.getTracks()
-          .forEach(track => track.stop()); 
+        micStream.getTracks().forEach((track) => track.stop());
         sourceNode.disconnect();
         audioContext.close();
       });
-      loop()
+      loop();
     } catch (error) {
-      console.log('error', error)
+      console.log("error", error);
     }
   };
 
   const loop = () => {
-    const ctx = canvasRef?.current?.getContext('2d');
+    const ctx = canvasRef?.current?.getContext("2d");
 
     if (status.current !== RECORDING) return null;
-  
-    ctx?.clearRect(0, 0, canvasRef?.current?.width ?? 1, canvasRef?.current?.height ?? 1);
+
+    ctx?.clearRect(
+      0,
+      0,
+      canvasRef?.current?.width ?? 1,
+      canvasRef?.current?.height ?? 1
+    );
     let maxFreq = -Infinity;
-    
-    if (Number(performance.now())  > now) {
+
+    if (Number(performance.now()) > now) {
       setNow(Number(performance.now() / TIME_OFFSET));
 
       if (!obj?.current?.dataArray) return null;
-  
+
       /* getFloatTimeDomainData copies the current waveform, or time-domain,
       data into a Float32Array array passed into it */
-      obj?.current?.analyserNode?.getFloatTimeDomainData(obj?.current?.dataArray)
-  
-      maxFreq = Math.max(0, ...obj?.current?.dataArray ?? [])
-    
+      obj?.current?.analyserNode?.getFloatTimeDomainData(
+        obj?.current?.dataArray
+      );
+
+      maxFreq = Math.max(0, ...(obj?.current?.dataArray ?? []));
+
       const freq = Math.max(1, Math.floor(maxFreq * 350));
 
       if (obj.current.graphData === undefined) {
@@ -132,7 +152,7 @@ function Record() {
 
       obj.current?.graphData.push({
         x: canvasRef?.current?.offsetWidth ?? 1,
-        y: (( canvasRef?.current?.offsetHeight ?? 1) / 2) - (freq / 2),
+        y: (canvasRef?.current?.offsetHeight ?? 1) / 2 - freq / 2,
         height: freq,
         width: GRAPH_WIDTH,
       });
@@ -142,14 +162,18 @@ function Record() {
   };
 
   const draw = () => {
-    const ctx = canvasRef?.current?.getContext('2d');
+    const ctx = canvasRef?.current?.getContext("2d");
     if (!ctx || !obj.current?.graphData) return null;
 
-    for (let i=0; i < obj.current?.graphData.length ; i++) {
+    for (let i = 0; i < obj.current?.graphData.length; i++) {
       const bar = obj.current?.graphData[i];
       if (!bar) continue;
-      ctx.fillStyle = generateCanvasFillColor(graphColor, bar.height, graphShaded).solid;
-      ctx?.fillRect(bar.x,bar.y,bar.width,bar.height);
+      ctx.fillStyle = generateCanvasFillColor(
+        graphColor,
+        bar.height,
+        graphShaded
+      ).solid;
+      ctx?.fillRect(bar.x, bar.y, bar.width, bar.height);
       bar.x = bar.x - GRAPH_WIDTH;
     }
   };

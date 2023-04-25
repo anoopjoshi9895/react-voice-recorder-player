@@ -9,7 +9,14 @@ type VoiceRecorderProps = {
   graphShaded?: boolean;
   downloadable?: boolean;
   onAudioDownload?: (data: Blob) => void;
-}
+  onStop: (data: Blob) => void;
+  onTimerUpdated: (timeDetails: Timer) => void;
+};
+type Timer = {
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
 
 type CanvasObj = {
   audioContext?: AudioContext;
@@ -35,7 +42,7 @@ type AudioRecordingDataType = {
   blob: Blob;
   duration: number;
   graphData: Array<GraphDataType>;
-}
+};
 
 interface AudioContextInterface {
   audioStatus?: string;
@@ -44,7 +51,7 @@ interface AudioContextInterface {
   updateAudioRecording: (data: AudioRecordingDataType) => void;
 }
 
-type UserPropsContextInterface = VoiceRecorderProps
+type UserPropsContextInterface = VoiceRecorderProps;
 
 type ControllerType = {
   svg: SVGGraphicsElements;
@@ -53,15 +60,15 @@ type ControllerType = {
   onClick: (data: event) => void;
   applyCircularStyles?: boolean;
   display?: boolean;
-}
+};
 
 type GenerateCanvasColorType = {
   color: string;
   height?: number | null;
   graphShaded?: boolean;
-}
+};
 
 type CanvasColorType = {
   solid: string;
   faded: string;
-}
+};

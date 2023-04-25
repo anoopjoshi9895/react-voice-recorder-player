@@ -41,6 +41,9 @@ export const VoiceRecorder = forwardRef((props: VoiceRecorderProps, ref) => {
             }}
           />
           <Controllers
+            onStatusChange={(status) => {
+              props.onStatusChange?.(status);
+            }}
             onTimerUpdated={(timer: Timer) => {
               console.log(timer);
               props.onTimerUpdated?.(timer);

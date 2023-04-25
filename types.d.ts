@@ -11,6 +11,7 @@ type VoiceRecorderProps = {
   onAudioDownload?: (data: Blob) => void;
   onStop: (data: Blob) => void;
   onTimerUpdated: (timeDetails: Timer) => void;
+  onStatusChange: (status: string) => void;
 };
 type Timer = {
   hours: number;

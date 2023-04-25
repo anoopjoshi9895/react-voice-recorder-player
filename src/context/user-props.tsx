@@ -13,6 +13,7 @@ const UserPropsContext = createContext<UserPropsContextInterface>({
   onAudioDownload: () => undefined,
   onStop: () => undefined,
   onTimerUpdated: () => undefined,
+  onStatusChange: () => undefined,
 });
 
 function UserPropsProvider({

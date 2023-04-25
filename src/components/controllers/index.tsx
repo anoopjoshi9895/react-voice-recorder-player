@@ -21,7 +21,13 @@ const INITIAL_BUTTON_STATUSES = {
 };
 
 const Controllers = forwardRef(
-  (props: { onTimerUpdated: (timeDetails: Timer) => void }, ref) => {
+  (
+    props: {
+      onTimerUpdated: (timeDetails: Timer) => void;
+      onStatusChange: (status: string) => void;
+    },
+    ref
+  ) => {
     const { audioStatus, updateAudioStatus, audioRecording } = useAudio();
     const {
       controllerContainerStyle,
@@ -193,6 +199,9 @@ const Controllers = forwardRef(
           break;
         default:
           setButtonStatuses(INITIAL_BUTTON_STATUSES);
+      }
+      if (audioStatus) {
+        props.onStatusChange(audioStatus);
       }
     }, [audioStatus]);
     return (

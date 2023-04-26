@@ -23,7 +23,7 @@ function Record(props: { onStop: (audio: AudioRecordingDataType) => void }) {
   const status = useRef<string>(audioStatus);
 
   useEffect(() => {
-    status.current = audioStatus;
+    if (status) status.current = audioStatus;
     if (audioStatus === RECORDING) {
       /* recording resumed */
       if (obj?.current?.audioContext?.state === "suspended") {
@@ -58,7 +58,7 @@ function Record(props: { onStop: (audio: AudioRecordingDataType) => void }) {
       ".voice-recorder_recordcontainer"
     );
 
-    if (canvas) canvasRef.current = canvas[0];
+    if (canvas && canvasRef) canvasRef.current = canvas[0];
   };
 
   const setUpAudioAPI = (micStream: MediaStream) => {
